@@ -3,4 +3,5 @@ project(sczr)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(sczr main.cpp)
+add_executable(example example.cpp CameraProcess.h common.h)
+add_executable(main main.cpp CameraProcess.h common.h CameraProcess.cpp)
