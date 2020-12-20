@@ -3,5 +3,9 @@ project(sczr)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(example example.cpp CameraProcess.h common.h)
-add_executable(main main.cpp CameraProcess.h common.h CameraProcess.cpp)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread")
+add_executable(SynchroTest main.cpp SharedMemory.cpp SharedMemory.h SharedQueue.cpp SharedQueue.h CameraProcess.cpp CameraProcess.h common.h)
+find_library(LIBRT rt)
+if(LIBRT)
+    target_link_libraries(SynchroTest ${LIBRT})
+endif()
