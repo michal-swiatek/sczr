@@ -35,7 +35,7 @@ public:
     template<typename Func, typename... Args>
     void prodOperation(Func f, Args&&... args);
     int getSize(){ return size; };
-    char* buffer;
+    unsigned char* buffer;
     SharedMemory(const char* file_path, bool write);
     ~SharedMemory();
 private:

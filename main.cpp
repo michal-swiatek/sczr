@@ -19,13 +19,16 @@
 
 
 
-void storeImage(char*& buf, SharedMemory& shm);
+void storeImage(unsigned char*& buf, SharedMemory& shm);
 void ImageProcess();
 void CameraProcess();
 void findCenter(SharedMemory& shm, MyMes* result);
 void GameProcess();
 
-
+#define RL 50
+#define GL 50
+#define BL 50
+#define DIST 900
 
 int main() {
     mq_unlink(MY_Q);
@@ -61,17 +64,16 @@ void CameraProcess() {
     while (true)
     {
         SharedMemory shm = SharedMemory(FILE_PATH, true);
-        char *frame = (char *) malloc(shm.getSize());
+        unsigned char *frame = (unsigned char *) malloc(shm.getSize());
         for (int i = 0; i < shm.getSize(); ++i) {
-//            frame[i] = dict[rand()%21];
-            frame[i] = (char)(rand()%256);
-
+            frame[i] = rand()%256;
+            //printf("%d ", frame[i]);
         }
         shm.prodOperation(storeImage, frame, shm);
         //printf("Camera Process\n");
     }
 }
-void storeImage(char*& buf, SharedMemory& shm)
+void storeImage(unsigned char*& buf, SharedMemory& shm)
 {
     //printf("\nCamProc\n");
     memcpy((void*)shm.buffer, (void*)buf, shm.getSize() );
@@ -88,7 +90,7 @@ void ImageProcess()
         MyMes* result = (MyMes*)malloc(sizeof(MyMes));
         shm.consOperation(findCenter, shm, result);
         send_q.sendMes(result);
-        printf("\nSending coordinates: %d %d\n", result->x, result->y);
+        //printf("\nSending coordinates: %d %d\n", result->x, result->y);
         //printf("Image Process\n");
     }
 }
@@ -99,20 +101,32 @@ void findCenter(SharedMemory& shm, MyMes* result)
     char max = 0;
     result->x = 0;
     result->y = 0;
+    int x_max=-1, x_min=IMAGE_WIDTH, y_max=-1, y_min=IMAGE_HEIGHT;
     for(int i = 0; i < shm.getSize(); i+=3)
     {
-        if(i >= 921591) {
-//            printf("%d: %d ", i, (int)shm.buffer[i]);
-//            printf("%d: %d ", i+1, (int)shm.buffer[i+1]);
-//            printf("%d: %d ", i+2, (int)shm.buffer[i+2]);
-        }
-        char curr = shm.buffer[i];
-        if( curr > max)
+        int x = (unsigned char)shm.buffer[i];
+        int y = (unsigned char)shm.buffer[i+1];
+        int z = (unsigned char)shm.buffer[i+2];
+        int x_curr = (i/3)%IMAGE_WIDTH;
+        int y_curr = (i/3)/IMAGE_WIDTH;
+        if((x-RL)*(x-RL) + (y-GL)*(y-GL) + (z-BL)*(z-BL) <= DIST)
         {
-            max = curr;
-            result->x = (i/3)%IMAGE_WIDTH;
-            result->y = (i/3)/IMAGE_WIDTH;
+            if(x_curr < x_min && y_curr < y_min)
+            {
+                x_min = x_curr;
+                y_min = y_curr;
+                continue;
+            }
+            if(x_curr > x_max && y_curr > y_max)
+            {
+                x_max = x_curr;
+                y_max = y_curr;
+                continue;
+            }
         }
+        result->x = (x_max+x_min)/2;
+        result->y = (y_max+y_min)/2;
+
     }
 }
 
