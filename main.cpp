@@ -12,6 +12,7 @@
 #include <mqueue.h>
 #include "SharedMemory.h"
 #include "SharedQueue.h"
+#include "ImageProcess.h"
 #include <cstdlib>
 #include <random>
 #include <signal.h>
@@ -21,22 +22,17 @@
 
 
 
+/* functions to support the main process */
+void init_setup(); // creating shared objects
+void start_child_procs(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_proc_id); // starting children procs
+void print_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id); // print out children pids
+void kill_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id); // kill children procs before finishing
+void childMenu(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id); // option to quit the program
 
-void init_setup();
-void start_child_procs(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_proc_id);
-void print_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id);
-void kill_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id);
-void childMenu(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id);
-
-void ImageProcess();
 void findCenter(SharedMemory& shm, MyMes* result);
 void GameProcess();
 
 
-#define RL 150
-#define GL 255
-#define BL 150
-#define DIST 4
 
 template <typename T>
 pid_t runProcess()
@@ -58,7 +54,7 @@ int main() {
     init_setup();
     pid_t cam_proc_id, image_proc_id, game_proc_id;
 
-    cam_proc_id = runProcess<CameraProcess>();
+    //cam_proc_id = runProcess<CameraProcess>();
 
     start_child_procs(cam_proc_id, image_proc_id, game_proc_id);
     childMenu(cam_proc_id, image_proc_id, game_proc_id);
@@ -73,11 +69,12 @@ int main() {
 
 void start_child_procs(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_proc_id)
 {
-    image_proc_id = fork();
-    if(image_proc_id == 0) ImageProcess();
+    cam_proc_id = runProcess<CameraProcess>();
+
+    image_proc_id = runProcess<ImageProcess>();
 
     game_proc_id = fork();
-    if(game_proc_id != 0) GameProcess();
+    if(game_proc_id == 0) GameProcess();
 }
 
 void init_setup()
@@ -122,43 +119,6 @@ void kill_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id
     kill(game_proc_id, SIGTERM);
 }
 
-void ImageProcess()
-{
-    SharedMemory shm = SharedMemory(FILE_PATH, false);
-    SharedQueue send_q = SharedQueue(true);
-
-    while(true)
-    {
-        MyMes result{};
-        shm.consOperation(findCenter, shm, &result);
-        send_q.sendMes(&result);
-    }
-}
-
-void findCenter(SharedMemory& shm, MyMes* result)
-{
-    int x_max=-1, x_min=WIDTH, y_max=-1, y_min=HEIGHT;
-    for(int i = 0; i < shm.getSize(); i+=3)
-    {
-        int r = (unsigned char)shm.buffer[i];
-        int g = (unsigned char)shm.buffer[i+1];
-        int b = (unsigned char)shm.buffer[i+2];
-
-        int x_curr = (i/3)%WIDTH;
-        int y_curr = (i/3)/WIDTH;
-
-        if((r-RL)*(r-RL) + (g-GL)*(g-GL) + (b-BL)*(b-BL) <= DIST * DIST)
-        {
-            x_min = std::min(x_curr, x_min);
-            y_min = std::min(y_curr, y_min);
-            x_max = std::max(x_curr, x_max);
-            y_max = std::max(y_curr, y_max);
-        }
-    }
-
-    result->x = (x_max+x_min)/2;
-    result->y = (y_max+y_min)/2;
-}
 
 void GameProcess() {
     SharedQueue rec_q = SharedQueue(false);

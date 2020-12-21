@@ -7,6 +7,13 @@
 
 #include <cinttypes>
 
+/* red, green, blue color limits ( color we are looking for ) */
+#define RL 150
+#define GL 255
+#define BL 150
+
+#define DIST 4 // distance allowed from the chosen color
+
 using byte = uint8_t;
 
 const int WIDTH = 640;
