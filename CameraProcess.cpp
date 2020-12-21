@@ -9,6 +9,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <ctime>
+#include <iomanip>
 
 //  System libraries
 #include <unistd.h>
@@ -152,11 +154,12 @@ void YUVDataToRGBBuffer(int y, int u, int v, byte *buf)
     *(buf + 2) = b;
 }
 
-void CameraProcess::updateFrameData()
+void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& timestamp)
 {
     shm.prodOperation([&](){
 
         byte* shmBuf = shm.data->buffer;
+        shm.data->timestamp = timestamp;
 
         for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
         {
@@ -185,13 +188,14 @@ void CameraProcess::updateFrameData()
         auto start = std::chrono::system_clock::now();
 
 //        readFrame();
-        updateFrameData();
+        updateFrameData(start);
 
         auto difference = std::chrono::system_clock::now() - start;
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(difference).count();
 
 #ifndef NDEBUG
-        std::cout << "CameraProcess (running): " << ++frames << ' ' << FRAME_TIME - time << '\n';
+        auto temp = std::chrono::system_clock::to_time_t(shm.data->timestamp);
+        std::cout << "CameraProcess (running): " << ++frames << ' ' << FRAME_TIME - time << ' ' << std::put_time(std::localtime(&temp), "%H %M %S") << '\n';
 #endif
 
         if (time < FRAME_TIME)

@@ -25,7 +25,7 @@ public:
     void closeStream();
 
     void readFrame();
-    void updateFrameData();
+    void updateFrameData(std::chrono::system_clock::time_point& timestamp);
 
     [[noreturn]] void run();
 
