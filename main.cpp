@@ -63,6 +63,11 @@ int main() {
     start_child_procs(cam_proc_id, image_proc_id, game_proc_id);
     childMenu(cam_proc_id, image_proc_id, game_proc_id);
 
+    mq_unlink(MY_Q);
+    shm_unlink(FILE_NAME);
+    sem_unlink(SEM_CONS_NAME);
+    sem_unlink(SEM_PROD_NAME);
+
     return 0;
 }
 
