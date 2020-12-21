@@ -12,7 +12,7 @@
 
 class ImageProcess {
 public:
-    ImageProcess() : shm(NULL, false), send_q(true) {};
+    ImageProcess() : shm(false), send_q(true) {};
     ~ImageProcess() = default;
 
     [[noreturn]] void run();

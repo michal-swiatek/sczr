@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-SharedMemory::SharedMemory(const char* file, bool write)
+SharedMemory::SharedMemory(bool write)
 {
     size = WIDTH * HEIGHT * 3;
     errno = 0;

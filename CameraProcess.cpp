@@ -8,11 +8,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <fstream>
 #include <iostream>
 
 //  System libraries
-#include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -22,7 +20,7 @@ using namespace std;
 
 void YUVDataToRGBBuffer(int y, int u, int v, byte* buf);
 
-CameraProcess::CameraProcess() : shm(FILE_PATH, true)
+CameraProcess::CameraProcess() : shm(true)
 {
     //  Open the device
 //    fd = open("/dev/video0", O_RDWR);

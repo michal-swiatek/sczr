@@ -5,6 +5,8 @@
 #ifndef SCZR_COMMON_H
 #define SCZR_COMMON_H
 
+#include <cinttypes>
+
 /* red, green, blue color limits ( color we are looking for ) */
 const int RL = 150;
 const int GL = 255;

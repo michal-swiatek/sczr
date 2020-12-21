@@ -21,6 +21,9 @@
 class SharedMemory
 {
 public:
+    SharedMemory(bool write);
+    ~SharedMemory();
+
     template<typename Func, typename... Args>
     void consOperation(Func f, Args&&... args);
 
@@ -28,9 +31,8 @@ public:
     void prodOperation(Func f, Args&&... args);
 
     int getSize(){ return size; };
+
     unsigned char* buffer;
-    SharedMemory(const char* file_path, bool write);
-    ~SharedMemory();
 
 private:
     int shm_fd;

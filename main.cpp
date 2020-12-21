@@ -12,24 +12,12 @@ void start_child_procs(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_pro
 void print_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id); // print out children pids
 void kill_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id); // kill children procs before finishing
 void childMenu(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id); // option to quit the program
+void unlinkObjects();
 
 void GameProcess();
 
 template <typename T>
-pid_t runProcess()
-{
-    pid_t result = fork();
-
-    if (result == 0) {
-        T process;
-        process.run();
-
-        return 0;
-    }
-    else
-        return result;
-}
-
+pid_t runProcess();
 
 int main() {
     init_setup();
@@ -98,6 +86,13 @@ void kill_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id
     kill(game_proc_id, SIGTERM);
 }
 
+void unlinkObjects()
+{
+    mq_unlink(MY_Q);
+    shm_unlink(FILE_NAME);
+    sem_unlink(SEM_CONS_NAME);
+    sem_unlink(SEM_PROD_NAME);
+}
 
 void GameProcess() {
     SharedQueue rec_q = SharedQueue(false);
@@ -113,4 +108,19 @@ void GameProcess() {
             std::cout << "GameProcess (running): " << mes->x << ' ' << mes->y << '\n';
 #endif
     }
+}
+
+template <typename T>
+pid_t runProcess()
+{
+    pid_t result = fork();
+
+    if (result == 0) {
+        T process;
+        process.run();
+
+        return 0;
+    }
+    else
+        return result;
 }
