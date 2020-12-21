@@ -20,6 +20,8 @@
 
 using namespace std;
 
+void YUVDataToRGBBuffer(int y, int u, int v, byte* buf);
+
 CameraProcess::CameraProcess() : shm(FILE_PATH, true)
 {
     //  Open the device
@@ -130,40 +132,54 @@ void CameraProcess::readFrame()
 #endif
 }
 
+void YUVDataToRGBBuffer(int y, int u, int v, byte *buf)
+{
+    u -= 128;
+    v -= 128;
+
+    int r = static_cast<int>(y + 1.370705 * v);
+    int g = static_cast<int>(y - 0.698001 * v - 0.337633 * u);
+    int b = static_cast<int>(y + 1.732446 * u);
+
+    // Clamp to 0..1
+    if (r < 0) r = 0;
+    if (g < 0) g = 0;
+    if (b < 0) b = 0;
+    if (r > 255) r = 255;
+    if (g > 255) g = 255;
+    if (b > 255) b = 255;
+
+    *buf = r;
+    *(buf + 1) = g;
+    *(buf + 2) = b;
+}
+
 void CameraProcess::updateFrameData()
 {
-    auto YUVDataToRGBBuffer = [](int y, int u, int v, byte* buf) {
-        u -= 128;
-        v -= 128;
-
-        int r = static_cast<int>(y + 1.370705 * v);
-        int g = static_cast<int>(y - 0.698001 * v - 0.337633 * u);
-        int b = static_cast<int>(y + 1.732446 * u);
-
-        // Clamp to 0..1
-        if (r < 0) r = 0;
-        if (g < 0) g = 0;
-        if (b < 0) b = 0;
-        if (r > 255) r = 255;
-        if (g > 255) g = 255;
-        if (b > 255) b = 255;
-
-        *buf = r;
-        *(buf + 1) = g;
-        *(buf + 2) = b;
-    };
-
     shm.prodOperation([&](){
-        for (byte* localBuf = buffer, *shmBuf = shm.buffer; localBuf != buffer + (640 * 480 * 2); localBuf += 4, shmBuf += 6)
+
+        byte* shmBuf = shm.buffer;
+        for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
         {
-            int y1 = *localBuf;
-            int u = *(localBuf + 1);
-            int y2 = *(localBuf + 2);
-            int v = *(localBuf + 3);
+            int y1 = buffer[i];
+            int u = buffer[i + 1];
+            int y2 = buffer[i + 2];
+            int v = buffer[i + 3];
 
             YUVDataToRGBBuffer(y1, u, v, shmBuf);
             YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
         }
+
+//        for (byte* localBuf = buffer, *shmBuf = shm.buffer; localBuf != buffer + (640 * 480 * 2); localBuf += 4, shmBuf += 6)
+//        {
+//            int y1 = *localBuf;
+//            int u = *(localBuf + 1);
+//            int y2 = *(localBuf + 2);
+//            int v = *(localBuf + 3);
+//
+//            YUVDataToRGBBuffer(y1, u, v, shmBuf);
+//            YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
+//        }
     });
 }
 
@@ -185,8 +201,6 @@ void CameraProcess::updateFrameData()
 
         auto difference = std::chrono::system_clock::now() - start;
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(difference).count();
-
-        std::cout << ++frames << ' ' << FRAME_TIME - time << '\n';
 
         if (time < FRAME_TIME)
             usleep(1000 * (FRAME_TIME - time));

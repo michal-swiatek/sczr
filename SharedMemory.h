@@ -32,9 +32,6 @@ public:
     template<typename Func, typename... Args>
     void prodOperation(Func f, Args&&... args);
 
-    template <typename T, typename... Args>
-    void prodOperation(void (T::*f)(Args...), T obj , Args&&... args);
-
     int getSize(){ return size; };
     unsigned char* buffer;
     SharedMemory(const char* file_path, bool write);
@@ -59,14 +56,6 @@ void SharedMemory::prodOperation(Func f, Args&&... args)
 {
     sem_wait(this->consumer);
     f(std::forward<Args>(args)...);
-    sem_post(this->producer);
-}
-
-template <typename T, typename... Args>
-void SharedMemory::prodOperation(void (T::*f)(Args...), T obj , Args&&... args)
-{
-    sem_wait(this->consumer);
-    (obj.*f)(std::forward<Args>(args)...);
     sem_post(this->producer);
 }
 

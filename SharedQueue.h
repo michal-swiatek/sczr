@@ -16,9 +16,6 @@
 
 
 #define MY_Q "/my_q"
-#define MAX_MSG_SIZE 512
-#define MAX_MESSAGES 5
-#define MSG_BUFFER_SIZE MAX_MSG_SIZE + 10
 
 typedef struct MyMes{
     int x, y;
@@ -28,7 +25,7 @@ class SharedQueue {
 public:
     explicit SharedQueue(bool write);
     void sendMes(MyMes* mes);
-    void receiveMes(MyMes*& msg);
+    void receiveMes(MyMes*& msg) const;
 private:
     mqd_t my_q;
 };
