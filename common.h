@@ -5,14 +5,17 @@
 #ifndef SCZR_COMMON_H
 #define SCZR_COMMON_H
 
-#include <cinttypes>
-
 /* red, green, blue color limits ( color we are looking for ) */
-#define RL 150
-#define GL 255
-#define BL 150
+const int RL = 150;
+const int GL = 255;
+const int BL = 150;
 
-#define DIST 4 // distance allowed from the chosen color
+const char MY_Q[] = "/my_q";
+const char SEM_CONS_NAME[] = "/consumer";
+const char SEM_PROD_NAME[] = "/producer";
+const char FILE_NAME[] = "MEMFILE";
+
+const int DIST = 6; // distance allowed from the chosen color
 
 using byte = uint8_t;
 

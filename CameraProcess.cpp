@@ -169,17 +169,6 @@ void CameraProcess::updateFrameData()
             YUVDataToRGBBuffer(y1, u, v, shmBuf);
             YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
         }
-
-//        for (byte* localBuf = buffer, *shmBuf = shm.buffer; localBuf != buffer + (640 * 480 * 2); localBuf += 4, shmBuf += 6)
-//        {
-//            int y1 = *localBuf;
-//            int u = *(localBuf + 1);
-//            int y2 = *(localBuf + 2);
-//            int v = *(localBuf + 3);
-//
-//            YUVDataToRGBBuffer(y1, u, v, shmBuf);
-//            YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
-//        }
     });
 }
 
@@ -201,6 +190,10 @@ void CameraProcess::updateFrameData()
 
         auto difference = std::chrono::system_clock::now() - start;
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(difference).count();
+
+#ifndef NDEBUG
+        std::cout << "CameraProcess (running): " << ++frames << ' ' << FRAME_TIME - time << '\n';
+#endif
 
         if (time < FRAME_TIME)
             usleep(1000 * (FRAME_TIME - time));

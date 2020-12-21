@@ -6,7 +6,6 @@
 
 #include "common.h"
 
-
 SharedMemory::SharedMemory(const char* file, bool write)
 {
     size = WIDTH * HEIGHT * 3;
@@ -23,6 +22,5 @@ SharedMemory::SharedMemory(const char* file, bool write)
 
 SharedMemory::~SharedMemory()
 {
-    shm_unlink(FILE_PATH);
+    shm_unlink(FILE_NAME);
 }
-

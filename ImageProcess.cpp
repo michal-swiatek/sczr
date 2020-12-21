@@ -4,17 +4,25 @@
 
 #include "ImageProcess.h"
 
+#ifndef NDEBUG
+#include <iostream>
+#endif
+
 [[noreturn]] void ImageProcess::run()
 {
     while(true)
     {
-        MyMes result{};
+        GameMes result{};
         shm.consOperation(findCenter, shm, &result);
         send_q.sendMes(&result);
+
+#ifndef NDEBUG
+        std::cout << "ImageProcess (running): " << result.x << ' ' << result.y << '\n';
+#endif
     }
 }
 
-void ImageProcess::findCenter(SharedMemory& shm, MyMes* result)
+void ImageProcess::findCenter(SharedMemory& shm, GameMes* result)
 {
     // get border coordinates before searching for the color center
     int x_max=-1, x_min=WIDTH, y_max=-1, y_min=HEIGHT;

@@ -18,7 +18,7 @@ public:
     [[noreturn]] void run();
 
 private:
-    static void findCenter(SharedMemory& shm, MyMes* result);
+    static void findCenter(SharedMemory& shm, GameMes* result);
     SharedMemory shm;
     SharedQueue send_q;
 };

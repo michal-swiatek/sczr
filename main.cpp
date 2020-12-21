@@ -1,26 +1,10 @@
-#include <iostream>
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <string.h>
-#include <semaphore.h>
-#include <fcntl.h>
-#include <mqueue.h>
-#include <string>
-#include <mqueue.h>
+#include <csignal>
+
+#include "common.h"
+#include "CameraProcess.h"
 #include "SharedMemory.h"
 #include "SharedQueue.h"
 #include "ImageProcess.h"
-#include <cstdlib>
-#include <random>
-#include <signal.h>
-
-#include "CameraProcess.h"
-#include "common.h"
-
-
 
 /* functions to support the main process */
 void init_setup(); // creating shared objects
@@ -29,10 +13,7 @@ void print_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_i
 void kill_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id); // kill children procs before finishing
 void childMenu(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id); // option to quit the program
 
-void findCenter(SharedMemory& shm, MyMes* result);
 void GameProcess();
-
-
 
 template <typename T>
 pid_t runProcess()
@@ -53,8 +34,6 @@ pid_t runProcess()
 int main() {
     init_setup();
     pid_t cam_proc_id, image_proc_id, game_proc_id;
-
-    //cam_proc_id = runProcess<CameraProcess>();
 
     start_child_procs(cam_proc_id, image_proc_id, game_proc_id);
     childMenu(cam_proc_id, image_proc_id, game_proc_id);
@@ -122,10 +101,16 @@ void kill_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id
 
 void GameProcess() {
     SharedQueue rec_q = SharedQueue(false);
-    MyMes *mes = (MyMes*)malloc(sizeof(MyMes));
+    auto* mes = (GameMes*)malloc(sizeof(GameMes));
 
     while (true)
     {
-        rec_q.receiveMes(mes);
+        auto* temp = mes;
+        rec_q.receiveMes(temp);
+
+#ifndef NDEBUG
+        if (temp)
+            std::cout << "GameProcess (running): " << mes->x << ' ' << mes->y << '\n';
+#endif
     }
 }
