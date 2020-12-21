@@ -30,9 +30,9 @@ void ImageProcess::findCenter(SharedMemory& shm, GameMes* result)
     // +=3 because one pixel consists of 3 bytes
     for(int i = 0; i < shm.getSize(); i+=3)
     {
-        int r = (unsigned char)shm.buffer[i];
-        int g = (unsigned char)shm.buffer[i+1];
-        int b = (unsigned char)shm.buffer[i+2];
+        int r = (unsigned char)shm.data->buffer[i];
+        int g = (unsigned char)shm.data->buffer[i+1];
+        int b = (unsigned char)shm.data->buffer[i+2];
 
         // find current position on screen from 1d array of subpixels
         int x_curr = (i/3)%WIDTH;

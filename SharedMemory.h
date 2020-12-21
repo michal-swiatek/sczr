@@ -15,8 +15,15 @@
 #include <sys/mman.h>
 #include <cstring>
 #include <semaphore.h>
+#include <chrono>
 
 #include "common.h"
+
+struct Data
+{
+    byte buffer[WIDTH * HEIGHT * 3]{};
+    std::chrono::time_point<std::chrono::system_clock::time_point> timestamp{};
+};
 
 class SharedMemory
 {
@@ -32,7 +39,7 @@ public:
 
     int getSize(){ return size; };
 
-    unsigned char* buffer;
+    Data* data;
 
 private:
     int shm_fd;

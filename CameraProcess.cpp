@@ -156,7 +156,8 @@ void CameraProcess::updateFrameData()
 {
     shm.prodOperation([&](){
 
-        byte* shmBuf = shm.buffer;
+        byte* shmBuf = shm.data->buffer;
+
         for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
         {
             int y1 = buffer[i];
