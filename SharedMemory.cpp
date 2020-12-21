@@ -10,7 +10,6 @@ SharedMemory::SharedMemory(const char* file, bool write)
     size = IMAGE_WIDTH*IMAGE_HEIGHT*3;
     errno = 0;
     shm_fd = shm_open(FILE_NAME, O_CREAT | O_RDWR, 0660);
-    //printf(strerror(errno));
     ftruncate(shm_fd, size);
     write == true ? buffer = (unsigned char*) mmap(0, size, PROT_WRITE, MAP_SHARED, shm_fd, 0) : buffer = (unsigned char*) mmap(0, size, PROT_READ, MAP_SHARED, shm_fd, 0);
 

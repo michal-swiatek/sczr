@@ -46,12 +46,8 @@ private:
 };
 
 template <typename Func, typename... Args>
-auto SharedMemory::consOperation(Func f, Args&&... args) //-> decltype(f(std::forward<Args>(args)...))
+auto SharedMemory::consOperation(Func f, Args&&... args)
 {
-//    sem_wait(this->producer);
-//    auto t = f(std::forward<Args>(args)...);
-//    sem_post(this->consumer);
-//    return t;
     sem_wait(this->producer);
     f(std::forward<Args>(args)...);
     sem_post(this->consumer);
