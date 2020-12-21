@@ -7,9 +7,12 @@
 
 #include <cinttypes>
 
-using byte = int8_t;
+using byte = uint8_t;
 
 const int WIDTH = 640;
 const int HEIGHT = 480;
+
+const int FPS = 60;
+const int FRAME_TIME = 1000 / FPS;
 
 #endif //SCZR_COMMON_H

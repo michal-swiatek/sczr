@@ -20,11 +20,8 @@
 #include <semaphore.h>
 #define SEM_CONS_NAME "/consumer"
 #define SEM_PROD_NAME "/producer"
-#define FILE_PATH "/home/miki/CLionProjects/SynchroTest/memfile"
+#define FILE_PATH "memfile"
 #define FILE_NAME "MEMFILE"
-const int IMAGE_WIDTH = 640;
-const int IMAGE_HEIGHT = 480;
-
 
 class SharedMemory
 {
@@ -34,6 +31,10 @@ public:
 
     template<typename Func, typename... Args>
     void prodOperation(Func f, Args&&... args);
+
+    template <typename T, typename... Args>
+    void prodOperation(void (T::*f)(Args...), T obj , Args&&... args);
+
     int getSize(){ return size; };
     unsigned char* buffer;
     SharedMemory(const char* file_path, bool write);
@@ -58,6 +59,14 @@ void SharedMemory::prodOperation(Func f, Args&&... args)
 {
     sem_wait(this->consumer);
     f(std::forward<Args>(args)...);
+    sem_post(this->producer);
+}
+
+template <typename T, typename... Args>
+void SharedMemory::prodOperation(void (T::*f)(Args...), T obj , Args&&... args)
+{
+    sem_wait(this->consumer);
+    (obj.*f)(std::forward<Args>(args)...);
     sem_post(this->producer);
 }
 

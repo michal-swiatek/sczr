@@ -16,6 +16,9 @@
 #include <random>
 #include <signal.h>
 
+#include "CameraProcess.h"
+#include "common.h"
+
 
 
 
@@ -27,7 +30,6 @@ void childMenu(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_proc_id);
 
 void storeImage(unsigned char*& buf, SharedMemory& shm);
 void ImageProcess();
-void CameraProcess();
 void findCenter(SharedMemory& shm, MyMes* result);
 void GameProcess();
 
@@ -37,26 +39,44 @@ void GameProcess();
 #define BL 150
 #define DIST 20
 
+template <typename T>
+pid_t runProcess()
+{
+    pid_t result = fork();
+
+    if (result == 0) {
+        T process;
+        process.run();
+
+        return 0;
+    }
+    else
+        return result;
+}
+
 
 int main() {
     init_setup();
     pid_t cam_proc_id, image_proc_id, game_proc_id;
+
+    cam_proc_id = runProcess<CameraProcess>();
+
     start_child_procs(cam_proc_id, image_proc_id, game_proc_id);
+    childMenu(cam_proc_id, image_proc_id, game_proc_id);
+
+
     return 0;
 }
 
 void start_child_procs(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_proc_id)
 {
-    cam_proc_id = fork();
-    if(cam_proc_id == 0) CameraProcess();
-
     image_proc_id = fork();
     if(image_proc_id == 0) ImageProcess();
 
     game_proc_id = fork();
     if(game_proc_id == 0) GameProcess();
 
-    childMenu(cam_proc_id, image_proc_id, game_proc_id);
+//    childMenu(cam_proc_id, image_proc_id, game_proc_id);
 }
 
 void init_setup()
@@ -101,29 +121,6 @@ void kill_child_procs(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_proc
     kill(game_proc_id, SIGTERM);
 }
 
-void CameraProcess() {
-    srand(time(0));
-    while (true)
-    {
-        SharedMemory shm = SharedMemory(FILE_PATH, true);
-        unsigned char *frame = (unsigned char *) malloc(shm.getSize());
-        for (int i = 0; i < shm.getSize(); ++i) {
-            frame[i] = rand()%256;
-            //printf("%d ", frame[i]);
-        }
-        shm.prodOperation(storeImage, frame, shm);
-        delete frame;
-        //printf("Camera Process\n");
-    }
-}
-
-void storeImage(unsigned char*& buf, SharedMemory& shm)
-{
-    //printf("\nCamProc\n");
-    memcpy((void*)shm.buffer, (void*)buf, shm.getSize() );
-
-}
-
 
 void ImageProcess()
 {
@@ -134,6 +131,8 @@ void ImageProcess()
         MyMes* result = (MyMes*)malloc(sizeof(MyMes));
         shm.consOperation(findCenter, shm, result);
         send_q.sendMes(result);
+        std::cout << "B\n";
+        sleep(1);
         //printf("\nSending coordinates: %d %d\n", result->x, result->y);
         //printf("Image Process\n");
         delete result;
@@ -146,14 +145,14 @@ void findCenter(SharedMemory& shm, MyMes* result)
     char max = 0;
     result->x = 0;
     result->y = 0;
-    int x_max=-1, x_min=IMAGE_WIDTH, y_max=-1, y_min=IMAGE_HEIGHT;
+    int x_max=-1, x_min=WIDTH, y_max=-1, y_min=HEIGHT;
     for(int i = 0; i < shm.getSize(); i+=3)
     {
         int x = (unsigned char)shm.buffer[i];
         int y = (unsigned char)shm.buffer[i+1];
         int z = (unsigned char)shm.buffer[i+2];
-        int x_curr = (i/3)%IMAGE_WIDTH;
-        int y_curr = (i/3)/IMAGE_WIDTH;
+        int x_curr = (i/3)%WIDTH;
+        int y_curr = (i/3)/WIDTH;
         if((x-RL)*(x-RL) + (y-GL)*(y-GL) + (z-BL)*(z-BL) <= DIST)
         {
             x_min = std::min(x_curr, x_min);
@@ -176,6 +175,10 @@ void GameProcess() {
     temp = nullptr;
 
             rec_q.receiveMes(temp);
+
+
+            std::cout << "C\n";
+            sleep(1);
 
         mes = temp;
     }

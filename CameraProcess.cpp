@@ -20,28 +20,27 @@
 
 using namespace std;
 
-void CameraProcess::init()
+CameraProcess::CameraProcess() : shm(FILE_PATH, true)
 {
     //  Open the device
-    fd = open("/dev/video0", O_RDWR);
-    if(fd < 0){
-        perror("Failed to open device, OPEN");
-        exit(1);
-    }
-
-    //  Ask the device if it can capture frames
-    v4l2_capability capability{};
-    if(ioctl(fd, VIDIOC_QUERYCAP, &capability) < 0){
-        // something went wrong... exit
-        perror("Failed to get device capabilities, VIDIOC_QUERYCAP");
-        exit(1);
-    }
+//    fd = open("/dev/video0", O_RDWR);
+//    if(fd < 0){
+//        perror("Failed to open device /dev/video0, OPEN");
+//        exit(1);
+//    }
+//
+//    //  Ask the device if it can capture frames
+//    v4l2_capability capability{};
+//    if(ioctl(fd, VIDIOC_QUERYCAP, &capability) < 0){
+//        // something went wrong... exit
+//        perror("Failed to get device capabilities, VIDIOC_QUERYCAP");
+//        exit(1);
+//    }
 }
 
-void CameraProcess::quit()
-{
-    close(fd);
-    fd = 0;
+CameraProcess::~CameraProcess() {
+//    close(fd);
+//    fd = 0;
 }
 
 void CameraProcess::setup()
@@ -110,7 +109,7 @@ void CameraProcess::closeStream()
     }
 }
 
-void CameraProcess::readFrame(const char* file)
+void CameraProcess::readFrame()
 {
     //  Queue the buffer
     if(ioctl(fd, VIDIOC_QBUF, &bufferInfo) < 0){
@@ -129,37 +128,69 @@ void CameraProcess::readFrame(const char* file)
     cout << "Buffer has: " << (double)bufferInfo.bytesused / 1024
          << " KBytes of data" << endl;
 #endif
-
-    outBuffer.resize(bufferInfo.bytesused);
-    std::copy(buffer, buffer + bufferInfo.bytesused, outBuffer.begin());
-    updateFrameData(file);
 }
 
-void CameraProcess::updateFrameData(const char* file)
+void CameraProcess::updateFrameData()
 {
-    // Write the data out to file
-    ofstream outFile;
-    outFile.open(file, ios::binary | ios::app);
+    auto YUVDataToRGBBuffer = [](int y, int u, int v, byte* buf) {
+        u -= 128;
+        v -= 128;
 
-    outFile.write(reinterpret_cast<const char *>(outBuffer.data()), bufferInfo.bytesused);
+        int r = static_cast<int>(y + 1.370705 * v);
+        int g = static_cast<int>(y - 0.698001 * v - 0.337633 * u);
+        int b = static_cast<int>(y + 1.732446 * u);
 
-    // Close the file
-    outFile.close();
+        // Clamp to 0..1
+        if (r < 0) r = 0;
+        if (g < 0) g = 0;
+        if (b < 0) b = 0;
+        if (r > 255) r = 255;
+        if (g > 255) g = 255;
+        if (b > 255) b = 255;
+
+        *buf = r;
+        *(buf + 1) = g;
+        *(buf + 2) = b;
+    };
+
+    shm.prodOperation([&](){
+        for (byte* localBuf = buffer, *shmBuf = shm.buffer; localBuf != buffer + (640 * 480 * 2); localBuf += 4, shmBuf += 6)
+        {
+            int y1 = *localBuf;
+            int u = *(localBuf + 1);
+            int y2 = *(localBuf + 2);
+            int v = *(localBuf + 3);
+
+            YUVDataToRGBBuffer(y1, u, v, shmBuf);
+            YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
+        }
+    });
 }
 
-void CameraProcess::run()
+[[noreturn]] void CameraProcess::run()
 {
-    init();
-    setup();
+//    setup();
+//    openStream();
 
-    openStream();
+    int frames = 0;
+    buffer = new byte[640 * 480 * 2];
 
-    std::string path = "webcam_output";
+    while (true)
+    {
+        //  Start counting time
+        auto start = std::chrono::system_clock::now();
 
-    for (int i = 0; i < 20; ++i)
-        readFrame((path + std::to_string(i) + ".jpg").c_str());
+//        readFrame();
+        updateFrameData();
 
-    closeStream();
+        auto difference = std::chrono::system_clock::now() - start;
+        auto time = std::chrono::duration_cast<std::chrono::milliseconds>(difference).count();
 
-    quit();
+        std::cout << ++frames << ' ' << FRAME_TIME - time << '\n';
+
+        if (time < FRAME_TIME)
+            usleep(1000 * (FRAME_TIME - time));
+    }
+
+    //  Upon exit OS will automatically close opened file descriptors
 }

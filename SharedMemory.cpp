@@ -4,10 +4,12 @@
 
 #include "SharedMemory.h"
 
+#include "common.h"
+
 
 SharedMemory::SharedMemory(const char* file, bool write)
 {
-    size = IMAGE_WIDTH*IMAGE_HEIGHT*3;
+    size = WIDTH*HEIGHT*3;
     errno = 0;
     shm_fd = shm_open(FILE_NAME, O_CREAT | O_RDWR, 0660);
     ftruncate(shm_fd, size);
