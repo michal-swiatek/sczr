@@ -34,7 +34,7 @@
         if (temp)
         {
 #ifndef NDEBUG
-            std::cout << "GameProcess (receiving): " << mes_in->id << ": " << mes_in->x << ' ' << mes_in->y << '\n';
+            std::cout << "GameProcess (receiving): " << mes_in.id << ": " << mes_in.x << ' ' << mes_in.y << '\n';
 #endif
             // create a message to send to the logger
             mes_out.id = mes_in.id;
