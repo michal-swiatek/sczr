@@ -18,8 +18,12 @@
     sf::CircleShape shape(5, 16);
     shape.setFillColor(sf::Color::Green);
 
+    sf::Event event;
+
     while (window.isOpen())
     {
+        while (window.pollEvent(event));
+
         // get a message
         auto* temp = mes_in;
         game_q.receiveMes(temp);
@@ -47,7 +51,7 @@
             if(rad > UPPER_SCALE_BOUND) rad = UPPER_SCALE_BOUND;
 
             //update the display
-            shape.setPosition(mes_in->x, mes_in->y);
+            shape.setPosition(mes_in->x - rad / 2, mes_in->y - rad / 2);
             shape.setRadius(rad);
             window.clear();
             window.draw(shape);
