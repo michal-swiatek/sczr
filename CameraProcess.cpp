@@ -25,24 +25,24 @@ void YUVDataToRGBBuffer(int y, int u, int v, byte* buf);
 CameraProcess::CameraProcess() : shm(true)
 {
     //  Open the device
-//    fd = open("/dev/video0", O_RDWR);
-//    if(fd < 0){
-//        perror("Failed to open device /dev/video0, OPEN");
-//        exit(1);
-//    }
-//
-//    //  Ask the device if it can capture frames
-//    v4l2_capability capability{};
-//    if(ioctl(fd, VIDIOC_QUERYCAP, &capability) < 0){
-//        // something went wrong... exit
-//        perror("Failed to get device capabilities, VIDIOC_QUERYCAP");
-//        exit(1);
-//    }
+    fd = open("/dev/video0", O_RDWR);
+    if(fd < 0){
+        perror("Failed to open device /dev/video0, OPEN");
+        exit(1);
+    }
+
+    //  Ask the device if it can capture frames
+    v4l2_capability capability{};
+    if(ioctl(fd, VIDIOC_QUERYCAP, &capability) < 0){
+        // something went wrong... exit
+        perror("Failed to get device capabilities, VIDIOC_QUERYCAP");
+        exit(1);
+    }
 }
 
 CameraProcess::~CameraProcess() {
-//    close(fd);
-//    fd = 0;
+    close(fd);
+    fd = 0;
 }
 
 void CameraProcess::setup()
@@ -54,6 +54,7 @@ void CameraProcess::setup()
     imageFormat.fmt.pix.height = HEIGHT;
     imageFormat.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
     imageFormat.fmt.pix.field = V4L2_FIELD_NONE;
+
     // tell the device you are using this format
     if(ioctl(fd, VIDIOC_S_FMT, &imageFormat) < 0){
         perror("Device could not set format, VIDIOC_S_FMT");
@@ -158,37 +159,38 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
 {
     shm.prodOperation([&](){
         
-        //byte* shmBuf = shm.data->buffer;
         shm.data->timestamp = timestamp;
         shm.data->id = frames;
 
-        for(int i = 0; i<sizeof(shm.data->buffer); i+=3)
-        {
-            if((4*frames)%(sizeof(shm.data->buffer)/3) == i/3)
-            {
-                shm.data->buffer[i] = RL;
-                shm.data->buffer[i+1] = GL;
-                shm.data->buffer[i+2] = BL;
-
-            }
-            else
-            {
-                shm.data->buffer[i] = 0;
-                shm.data->buffer[i+1] = 0;
-                shm.data->buffer[i+2] = 0;
-            }
-        }
-//        memcpy(shm.data->buffer, &buf, sizeof(Data));
-//        for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
+//        for(int i = 0; i<sizeof(shm.data->buffer); i+=3)
 //        {
-//            int y1 = buffer[i];
-//            int u = buffer[i + 1];
-//            int y2 = buffer[i + 2];
-//            int v = buffer[i + 3];
+//            if(4*frames%(sizeof(shm.data->buffer)/3) == i/3)
+//            {
+//                shm.data->buffer[i] = RL;
+//                shm.data->buffer[i+1] = GL;
+//                shm.data->buffer[i+2] = BL;
 //
-//            YUVDataToRGBBuffer(y1, u, v, shmBuf);
-//            YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
+//            }
+//            else
+//            {
+//                shm.data->buffer[i] = 0;
+//                shm.data->buffer[i+1] = 0;
+//                shm.data->buffer[i+2] = 0;
+//            }
 //        }
+//        memcpy(shm.data->buffer, &buf, sizeof(Data));
+
+        byte* shmBuf = shm.data->buffer;
+        for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
+        {
+            int y1 = buffer[i];
+            int u = buffer[i + 1];
+            int y2 = buffer[i + 2];
+            int v = buffer[i + 3];
+
+            YUVDataToRGBBuffer(y1, u, v, shmBuf);
+            YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
+        }
 #ifndef NDEBUG
         //std::cout<<"Camera Process (stored): " << shm.data->id << "\n";
 #endif
@@ -201,7 +203,7 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
 //    openStream();
 
     int frames = 0;
-    buffer = new byte[640 * 480 * 2];
+//    buffer = new byte[640 * 480 * 2];
 
     while (true)
     {
@@ -209,7 +211,7 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
         //  Start counting time
         auto start = std::chrono::system_clock::now();
 
-//        readFrame();
+        readFrame();
         updateFrameData(start, frames);
         auto difference = std::chrono::system_clock::now() - start;
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(difference).count();

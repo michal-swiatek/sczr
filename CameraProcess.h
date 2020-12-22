@@ -35,7 +35,7 @@ private:
     byte* buffer{nullptr};          //  Local frame buffer
     v4l2_buffer bufferInfo{};       //  Holds info about read buffer
 
-    SharedMemory shm;               //  Inter-process buffer to which rgb data of the frame will be copied
+    SharedMemory shm;//  Inter-process buffer to which rgb data of the frame will be copied
 };
 
 #endif //SCZR_CAMERAPROCESS_H
