@@ -18,7 +18,7 @@
 #include <sys/mman.h>
 #include <linux/videodev2.h>
 
-//#include "BMP.h" // if ever wanting to check the camera output
+#include "BMP.h" // if ever wanting to check the camera output
 
 using namespace std;
 
@@ -186,8 +186,6 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
 
 [[noreturn]] void CameraProcess::run()
 {
-    // to store image
-    //    std::string fileName ="webcam_output";
 
     outBuf.resize(WIDTH * HEIGHT * 3);
     setup();
@@ -195,6 +193,7 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
 
     int frames = 0;
     int count = 100;
+    std::string fileName = "webcam_output";
 
     while (true)
     {
