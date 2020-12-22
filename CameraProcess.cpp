@@ -154,12 +154,13 @@ void YUVDataToRGBBuffer(int y, int u, int v, byte *buf)
     *(buf + 2) = b;
 }
 
-void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& timestamp)
+void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& timestamp, int& frames)
 {
     shm.prodOperation([&](){
 
         byte* shmBuf = shm.data->buffer;
         shm.data->timestamp = timestamp;
+        shm.data->id = frames;
 
         for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
         {
@@ -184,18 +185,19 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
 
     while (true)
     {
+        ++frames;
         //  Start counting time
         auto start = std::chrono::system_clock::now();
 
 //        readFrame();
-        updateFrameData(start);
+        updateFrameData(start, frames);
 
         auto difference = std::chrono::system_clock::now() - start;
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(difference).count();
 
 #ifndef NDEBUG
         auto temp = std::chrono::system_clock::to_time_t(shm.data->timestamp);
-        std::cout << "CameraProcess (running): " << ++frames << ' ' << FRAME_TIME - time << ' ' << std::put_time(std::localtime(&temp), "%H %M %S") << '\n';
+        std::cout << "CameraProcess (running): " << frames << ' ' << FRAME_TIME - time << ' ' << std::put_time(std::localtime(&temp), "%H %M %S") << '\n';
 #endif
 
         if (time < FRAME_TIME)

@@ -19,10 +19,19 @@
 
 #include "common.h"
 
+
+/*
+ *   Shared memory object allows for a synchronous exchange of data between two processes - producer/consumer
+ *   Memory synchronization only available when using the provided API:
+ *      - consOperation
+ *      - prodOperation
+ */
+
 struct Data
 {
     byte buffer[WIDTH * HEIGHT * 3]{};
     std::chrono::system_clock::time_point timestamp{};
+    int id;
 };
 
 class SharedMemory
@@ -42,13 +51,14 @@ public:
     Data* data;
 
 private:
-    int shm_fd;
-    sem_t* consumer;
-    sem_t* producer;
+    int shm_fd; // shared memory file descriptor
+    sem_t* consumer; // consumer semaphore
+    sem_t* producer; // producer semaphore
 
     int size;
 };
 
+// use to execute consumer's operations - one at a time
 template <typename Func, typename... Args>
 void SharedMemory::consOperation(Func f, Args&&... args)
 {
@@ -57,6 +67,7 @@ void SharedMemory::consOperation(Func f, Args&&... args)
     sem_post(this->consumer);
 }
 
+// use to execute producer's operations - one at a time
 template <typename Func, typename... Args>
 void SharedMemory::prodOperation(Func f, Args&&... args)
 {

@@ -8,15 +8,13 @@
 #include <cstring>
 #include <iostream>
 
-SharedQueue::SharedQueue(bool write)
+SharedQueue::SharedQueue(bool write, bool non_block, const char* q_name)
 {
-    errno = 0;
+    // open the correct queue - producers should call with write = true
+    my_q = write ? ( non_block ? mq_open(q_name, O_WRONLY | O_NONBLOCK) : mq_open(q_name, O_WRONLY) ) : (non_block ? mq_open(q_name, O_RDONLY | O_NONBLOCK) : mq_open(q_name, O_RDONLY ) );
 
-    my_q = write ? mq_open(MY_Q, O_WRONLY) : mq_open(MY_Q, O_RDONLY | O_NONBLOCK);
+    // get the default msg size
     mq_attr mattr{};
     mq_getattr(my_q, &mattr);
-
     bufferSize = mattr.mq_msgsize;
-
-    std::cout << strerror(errno);
 }

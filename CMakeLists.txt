@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread")
 
 find_library(LIBRT rt)
 
-add_executable(SynchroTest main.cpp SharedMemory.cpp SharedQueue.cpp CameraProcess.cpp ImageProcess.cpp ImageProcess.h)
+add_executable(SynchroTest main.cpp SharedMemory.cpp SharedQueue.cpp CameraProcess.cpp ImageProcess.cpp ImageProcess.h LoggerProcess.cpp LoggerProcess.h GameProcess.cpp GameProcess.h)
 
 if(LIBRT)
     target_link_libraries(SynchroTest ${LIBRT})

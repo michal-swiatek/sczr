@@ -52,4 +52,6 @@ void ImageProcess::findCenter(SharedMemory& shm, GameMes* result)
     // the center of color would be the average of min and max coordinates - which is the center of a rectangle
     result->x = (x_max+x_min)/2;
     result->y = (y_max+y_min)/2;
+    result->timestamp = shm.data->timestamp;
+    result->id = shm.data->id;
 }
