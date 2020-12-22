@@ -18,6 +18,8 @@
 #include <sys/mman.h>
 #include <linux/videodev2.h>
 
+//#include "BMP.h" // if ever wanting to check the camera output
+
 using namespace std;
 
 void YUVDataToRGBBuffer(int y, int u, int v, byte* buf);
@@ -52,7 +54,7 @@ void CameraProcess::setup()
     imageFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     imageFormat.fmt.pix.width = WIDTH;
     imageFormat.fmt.pix.height = HEIGHT;
-    imageFormat.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
+    imageFormat.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
     imageFormat.fmt.pix.field = V4L2_FIELD_NONE;
 
     // tell the device you are using this format
@@ -162,26 +164,9 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
         shm.data->timestamp = timestamp;
         shm.data->id = frames;
 
-//        for(int i = 0; i<sizeof(shm.data->buffer); i+=3)
-//        {
-//            if(4*frames%(sizeof(shm.data->buffer)/3) == i/3)
-//            {
-//                shm.data->buffer[i] = RL;
-//                shm.data->buffer[i+1] = GL;
-//                shm.data->buffer[i+2] = BL;
-//
-//            }
-//            else
-//            {
-//                shm.data->buffer[i] = 0;
-//                shm.data->buffer[i+1] = 0;
-//                shm.data->buffer[i+2] = 0;
-//            }
-//        }
-//        memcpy(shm.data->buffer, &buf, sizeof(Data));
-
         byte* shmBuf = shm.data->buffer;
-        for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
+        byte* tBuf = outBuf.data();
+        for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6, tBuf += 6)
         {
             int y1 = buffer[i];
             int u = buffer[i + 1];
@@ -190,6 +175,8 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
 
             YUVDataToRGBBuffer(y1, u, v, shmBuf);
             YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
+            YUVDataToRGBBuffer(y1, u, v, tBuf);
+            YUVDataToRGBBuffer(y2, u, v, tBuf + 3);
         }
 #ifndef NDEBUG
         //std::cout<<"Camera Process (stored): " << shm.data->id << "\n";
@@ -199,20 +186,32 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
 
 [[noreturn]] void CameraProcess::run()
 {
-//    setup();
-//    openStream();
+    // to store image
+    //    std::string fileName ="webcam_output";
+
+    outBuf.resize(WIDTH * HEIGHT * 3);
+    setup();
+    openStream();
 
     int frames = 0;
-//    buffer = new byte[640 * 480 * 2];
+    int count = 100;
 
     while (true)
     {
+        // frame counter
         ++frames;
+
         //  Start counting time
         auto start = std::chrono::system_clock::now();
 
         readFrame();
         updateFrameData(start, frames);
+
+       // to store image
+//        BMP outFile(640, 480, false);
+//        std::copy(outBuf.begin(), outBuf.end(), outFile.data.begin());
+//        outFile.write((fileName + std::to_string(frames) + ".bmp").c_str());
+
         auto difference = std::chrono::system_clock::now() - start;
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(difference).count();
 

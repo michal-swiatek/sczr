@@ -13,6 +13,6 @@ if(SFML_FOUND)
     set(SFML_FLAGS -lsfml-graphics -lsfml-window -lsfml-system)
 endif()
 
-add_executable(SynchroTest main.cpp SharedMemory.cpp SharedQueue.cpp CameraProcess.cpp ImageProcess.cpp ImageProcess.h LoggerProcess.cpp LoggerProcess.h GameProcess.cpp GameProcess.h)
+add_executable(SynchroTest main.cpp SharedMemory.cpp SharedQueue.cpp CameraProcess.cpp ImageProcess.cpp ImageProcess.h LoggerProcess.cpp LoggerProcess.h GameProcess.cpp GameProcess.h BMP.h)
 
 target_link_libraries(SynchroTest ${LIBRT} ${SFML_LIBRARIES} ${SFML_DEPENDENCIES} ${SFML_FLAGS})

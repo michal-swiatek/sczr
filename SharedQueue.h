@@ -37,7 +37,7 @@ public:
     template<class T>
     void receiveMes(T*& msg) const
     {
-        // receive the message to the desired buffer
+        // receive the message and store it into the desired buffer
         char buf[bufferSize];
         auto result = mq_receive(this->my_q, &buf[0], bufferSize, 0);
 

@@ -42,7 +42,8 @@ void ImageProcess::findCenter(SharedMemory& shm, GameMes* result)
         int y_curr = (i/3)/WIDTH;
 
         // checking if not far enough from the given color (RL,BL,GL)
-        if((r-RL)*(r-RL) + (g-GL)*(g-GL) + (b-BL)*(b-BL) <= DIST * DIST)
+         if((r-RL)*(r-RL) + (g-GL)*(g-GL) + (b-BL)*(b-BL) <= DIST * DIST)
+//        if(g > 200)
         {
             // we are looking for min and max coordinates that we can approximate to being the desired color
             x_min = std::min(x_curr, x_min);
@@ -53,7 +54,7 @@ void ImageProcess::findCenter(SharedMemory& shm, GameMes* result)
     }
 
     // the center of color would be the average of min and max coordinates - which is the center of a rectangle
-    result->x = (x_max+x_min)/2;
+    result->x = WIDTH-(x_max+x_min)/2;
     result->y = (y_max+y_min)/2;
 
     result->timestamp = ts;

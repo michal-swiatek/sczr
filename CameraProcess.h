@@ -36,6 +36,7 @@ private:
     v4l2_buffer bufferInfo{};       //  Holds info about read buffer
 
     SharedMemory shm;//  Inter-process buffer to which rgb data of the frame will be copied
+    std::vector<byte> outBuf;
 };
 
 #endif //SCZR_CAMERAPROCESS_H
