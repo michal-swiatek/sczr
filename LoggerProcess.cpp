@@ -21,7 +21,6 @@
             std::cout << "LoggerProcess (running): " << mes.id << ' ' << latency << '\n';
 #endif
         }
-
     }
     output.close();
 }

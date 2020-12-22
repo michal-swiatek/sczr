@@ -4,6 +4,8 @@
 
 #include "GameProcess.h"
 
+#include <SFML/Graphics.hpp>
+
 [[noreturn]] void GameProcess::run()
 {
     auto* mes_in = (GameMes*)malloc(sizeof(GameMes));
