@@ -5,25 +5,29 @@
 #ifndef SCZR_CAMERAPROCESS_H
 #define SCZR_CAMERAPROCESS_H
 
-#include "common.h"
-
+//  C++/system libraries
 #include <vector>
+#include <chrono>
 #include <linux/videodev2.h>
+
+//  Project includes
+#include "common.h"
+#include "SharedMemory.h"
 
 class CameraProcess
 {
 public:
-    void init();
-    void quit();
+    CameraProcess();
+    ~CameraProcess();
 
     void setup();
     void openStream() const;
     void closeStream();
 
-    void readFrame(const char* file);
-    void updateFrameData(const char* file);
+    void readFrame();
+    void updateFrameData(std::chrono::system_clock::time_point& timestamp, int& frames);
 
-    void run();
+    [[noreturn]] void run();
 
 private:
     int fd{0};                      //  File descriptor of the video device (/dev/video0)
@@ -31,7 +35,7 @@ private:
     byte* buffer{nullptr};          //  Local frame buffer
     v4l2_buffer bufferInfo{};       //  Holds info about read buffer
 
-    std::vector<byte> outBuffer;    //  Buffer used to send data to ImageProcess
+    SharedMemory shm;//  Inter-process buffer to which rgb data of the frame will be copied
 };
 
 #endif //SCZR_CAMERAPROCESS_H
