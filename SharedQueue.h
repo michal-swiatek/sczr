@@ -12,12 +12,12 @@
 #include <cstring>
 
 struct GameMes{
-    int x, y, id;
+    int x{}, y{}, id{}, scale{};
     std::chrono::system_clock::time_point timestamp{};
 };
 
 struct LogMes{
-    int id;
+    int id{};
     std::chrono::system_clock::time_point begin{};
     std::chrono::system_clock::time_point end{};
 };

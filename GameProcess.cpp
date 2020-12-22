@@ -3,6 +3,7 @@
 //
 
 #include "GameProcess.h"
+#include <cmath>
 
 #include <SFML/Graphics.hpp>
 
@@ -39,8 +40,15 @@
             // send the message
             log_q.sendMes(mes_out);
 
+            // set the radius of the circular pointer
+            int rad = sqrt(mes_in->scale)/4;
+
+            if(rad < LOWER_SCALE_BOUND) rad = LOWER_SCALE_BOUND;
+            if(rad > UPPER_SCALE_BOUND) rad = UPPER_SCALE_BOUND;
+
             //update the display
             shape.setPosition(mes_in->x, mes_in->y);
+            shape.setRadius(rad);
             window.clear();
             window.draw(shape);
             window.display();

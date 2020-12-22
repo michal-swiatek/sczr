@@ -18,7 +18,7 @@ public:
     [[noreturn]] void run();
 private:
     SharedQueue log_q;
-    std::ofstream output;
+    std::ofstream output, output2;
 };
 
 
