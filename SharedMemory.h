@@ -31,7 +31,7 @@ struct Data
 {
     byte buffer[WIDTH * HEIGHT * 3]{};
     std::chrono::system_clock::time_point timestamp{};
-    int id;
+    int id{};
 };
 
 class SharedMemory

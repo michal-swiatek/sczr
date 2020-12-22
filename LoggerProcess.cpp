@@ -10,7 +10,7 @@
     output.open(LOG_FILE_PATH);
 
     LogMes mes{};
-    int i = 60;
+    int i = 10000;
     while (i-->0) {
         auto *temp = &mes;
         log_q.receiveMes(temp);

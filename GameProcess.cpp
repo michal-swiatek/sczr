@@ -10,7 +10,7 @@
 {
     auto* mes_in = (GameMes*)malloc(sizeof(GameMes));
     auto* mes_out = (LogMes*)malloc(sizeof(LogMes));
-    sf::RenderWindow window(sf::VideoMode(640, 480), "SFML works!");
+    sf::RenderWindow window(sf::VideoMode(640, 480), "Pointer");
     sf::CircleShape shape(5, 16);
     shape.setFillColor(sf::Color::Green);
 

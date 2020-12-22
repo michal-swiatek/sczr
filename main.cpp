@@ -33,7 +33,6 @@ int main() {
 
     init_setup();
     pid_t cam_proc_id, image_proc_id, game_proc_id, log_proc_id;
-
     start_child_procs(cam_proc_id, image_proc_id, game_proc_id, log_proc_id);
     setup_child_procs(cam_proc_id, image_proc_id, game_proc_id);
 
@@ -52,8 +51,6 @@ void start_child_procs(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_pro
     game_proc_id = runProcess<GameProcess>();
 
     log_proc_id = runProcess<LoggerProcess>();
-
-
 }
 
 void setup_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_id)
@@ -87,12 +84,12 @@ void setup_child_procs(pid_t cam_proc_id, pid_t image_proc_id, pid_t game_proc_i
         cpu_set_t cpuSet;
 
         CPU_ZERO(&cpuSet);
-        CPU_SET(1, &cpuSet);
+        CPU_SET(3, &cpuSet);
 
         result |= sched_setaffinity(cam_proc_id, sizeof(cpu_set_t), &cpuSet);
 
         CPU_ZERO(&cpuSet);
-        CPU_SET(2, &cpuSet);
+        CPU_SET(4, &cpuSet);
 
         result |= sched_setaffinity(image_proc_id, sizeof(cpu_set_t), &cpuSet);
 
@@ -114,7 +111,7 @@ void selectTestPreset()
         std::cout << "1. Default scheduling, no cpu core bound\n";
         std::cout << "2. FIFO scheduling, no cpu core bound\n";
         std::cout << "3. Round Robin scheduling, no cpu core bound\n";
-        std::cout << "4. FIFO scheduling, no cpu core bound\n";
+        std::cout << "4. FIFO scheduling, cpu core bound\n";
         std::cout << "5. Round Robin scheduling, cpu core bound\n";
         std::cout << "Select test preset: ";
 
@@ -160,8 +157,7 @@ void print_child_procs(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_pro
     std::cout << "\n1. Camera Process pid: " << cam_proc_id;
     std::cout << "\n2. Image Process pid: " << image_proc_id;
     std::cout << "\n3. Game Process pid: " << game_proc_id;
-    std::cout << "\n4. Logger Process pid: " << log_proc_id;
-    std::cout << "\n\nUse included bash scripts to chanage proc parameters, use given pid\n";
+    std::cout << "\n4. Logger Process pid: " << log_proc_id<<std::endl;
 }
 
 void childMenu(pid_t& cam_proc_id, pid_t& image_proc_id, pid_t& game_proc_id, pid_t& log_proc_id)
