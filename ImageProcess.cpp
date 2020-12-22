@@ -57,6 +57,8 @@ void ImageProcess::findCenter(SharedMemory& shm, GameMes* result)
     result->x = WIDTH-(x_max+x_min)/2;
     result->y = (y_max+y_min)/2;
 
+    result->scale = (y_max - y_min) * (x_max - x_min);
+
     result->timestamp = ts;
     result->id = fid;
 }

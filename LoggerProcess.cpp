@@ -8,6 +8,7 @@
 [[noreturn]] void LoggerProcess::run() {
     // open for storing
     output.open(LOG_FILE_PATH);
+    output2.open(LOG_FILE_PATH2);
 
     // set the total amount of gathered samples
     int count = LOG_COUNT;
@@ -26,11 +27,13 @@
             auto latency = std::chrono::duration_cast<std::chrono::milliseconds>(mes.end - mes.begin).count();
 
             // store data into the logger's file
-            output << mes.id << " " << latency << "\n";
+            output << mes.id << "\n";
+            output2 << latency << "\n";
 #ifndef NDEBUG
             std::cout << "LoggerProcess (running): " << mes.id << ' ' << latency << '\n';
 #endif
         }
     }
     output.close();
+    output2.close();
 }

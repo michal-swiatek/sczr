@@ -3,6 +3,7 @@
 //
 
 #include "GameProcess.h"
+#include <cmath>
 
 #include <SFML/Graphics.hpp>
 
@@ -17,9 +18,10 @@
     sf::CircleShape shape(5, 16);
     shape.setFillColor(sf::Color::Green);
 
+    sf::Event event;
+
     while (true)
     {
-        sf::Event event{};
         while (window.pollEvent(event));
 
         // get a message
@@ -42,8 +44,16 @@
             // send the message
             log_q.sendMes(&mes_out);
 
+            // set the radius of the circular pointer
+            int rad = sqrt(mes_in.scale)/4;
+
+            if(rad < LOWER_SCALE_BOUND) rad = LOWER_SCALE_BOUND;
+            if(rad > UPPER_SCALE_BOUND) rad = UPPER_SCALE_BOUND;
+
             //update the display
             shape.setPosition(mes_in.x, mes_in.y);
+            shape.setPosition(mes_in.x - rad / 2, mes_in.y - rad / 2);
+            shape.setRadius(rad);
             window.clear();
             window.draw(shape);
             window.display();
