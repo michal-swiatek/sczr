@@ -158,20 +158,46 @@ void CameraProcess::updateFrameData(std::chrono::system_clock::time_point& times
 {
     shm.prodOperation([&](){
 
+
         byte* shmBuf = shm.data->buffer;
         shm.data->timestamp = timestamp;
         shm.data->id = frames;
 
-        for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
+        for(int i = 0; i<shm.getSize(); i+=3)
         {
-            int y1 = buffer[i];
-            int u = buffer[i + 1];
-            int y2 = buffer[i + 2];
-            int v = buffer[i + 3];
+            if(frames%(2*shm.getSize()/3) == i/3 and i < WIDTH*(HEIGHT-1)*3 and buffer[i] != RL)
+            {
+                shm.data->buffer[i] = RL;
+                shm.data->buffer[i+1] = GL;
+                shm.data->buffer[i+2] = BL;
+                shm.data->buffer[i+3] = RL;
+                shm.data->buffer[i+4] = GL;
+                shm.data->buffer[i+5] = BL;
+                shm.data->buffer[i+WIDTH*3] = RL;
+                shm.data->buffer[i+WIDTH*3+1] = GL;
+                shm.data->buffer[i+WIDTH*3+2] = BL;
+                shm.data->buffer[i+WIDTH*3+3] = RL;
+                shm.data->buffer[i+WIDTH*3+4] = GL;
+                shm.data->buffer[i+WIDTH*3+5] = BL;
 
-            YUVDataToRGBBuffer(y1, u, v, shmBuf);
-            YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
+            }
+            else
+            {
+                shm.data->buffer[i] = 0;
+                shm.data->buffer[i+1] = 0;
+                shm.data->buffer[i+2] = 0;
+            }
         }
+//        for (int i = 0; i < 640 * 480 * 2; i += 4, shmBuf += 6)
+//        {
+//            int y1 = buffer[i];
+//            int u = buffer[i + 1];
+//            int y2 = buffer[i + 2];
+//            int v = buffer[i + 3];
+//
+//            YUVDataToRGBBuffer(y1, u, v, shmBuf);
+//            YUVDataToRGBBuffer(y2, u, v, shmBuf + 3);
+//        }
     });
 }
 
